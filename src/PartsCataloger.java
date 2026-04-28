@@ -163,7 +163,7 @@ public class PartsCataloger {
             LeafNode leaf = findLeaf(id);
             Part toRemove = null;
 
-            // 1. Find and remove the record
+            //Find and remove the record
             for (Part p : leaf.records) {
                 if (p.id.equals(id)) {
                     toRemove = p;
@@ -226,7 +226,7 @@ public class PartsCataloger {
                     Part p = tree.search(console.nextLine());
                     System.out.println(p != null ? p : "Part not found.");
                     break;
-                case 2: // Next 10
+                case 2: // Display Next 10
                     System.out.print("Enter Starting Part ID: ");
                     displayNextTen(tree, console.nextLine());
                     break;

@@ -8,10 +8,11 @@ Due: April 29, 2026
  */
 
 public class PartsCataloger {
+
     //These keep track of tree metrics
-    public static int totalSplits   = 0;
-    public static int parentSplits  = 0;
-    public static int fusions       = 0;
+    public static int totalSplits = 0;
+    public static int parentSplits = 0;
+    public static int fusions = 0;
     public static int parentFusions = 0;
 
     //Part Class
@@ -20,7 +21,7 @@ public class PartsCataloger {
         String description;
 
         Part(String id, String description) {
-            this.id          = id;
+            this.id = id;
             this.description = description;
         }
 
@@ -58,7 +59,7 @@ public class PartsCataloger {
     static class BPlusTree {
         private Node root = new LeafNode();
         private final int MAX_INTERNAL_KEYS = 4;
-        private final int MAX_LEAF_RECORDS  = 16;
+        private final int MAX_LEAF_RECORDS = 16;
         private int depth = 1;
 
         public int getDepth() {
@@ -108,7 +109,7 @@ public class PartsCataloger {
             leaf.records.subList(mid, leaf.records.size()).clear();
 
             newLeaf.next = leaf.next;
-            leaf.next    = newLeaf;
+            leaf.next = newLeaf;
 
             promote(leaf, newLeaf.records.get(0).id, newLeaf);
         }
@@ -119,8 +120,8 @@ public class PartsCataloger {
                 newRoot.keys.add(key);
                 newRoot.children.add(left);
                 newRoot.children.add(right);
-                root         = newRoot;
-                left.parent  = newRoot;
+                root = newRoot;
+                left.parent = newRoot;
                 right.parent = newRoot;
                 depth++;
                 return;
@@ -143,11 +144,12 @@ public class PartsCataloger {
         private void splitInternal(InternalNode node) {
             parentSplits++;
             InternalNode newNode = new InternalNode();
-            int    mid   = node.keys.size() / 2;
+            int mid = node.keys.size() / 2;
             String upKey = node.keys.get(mid);
 
             newNode.keys.addAll(new ArrayList<>(node.keys.subList(mid + 1, node.keys.size())));
             newNode.children.addAll(new ArrayList<>(node.children.subList(mid + 1, node.children.size())));
+
             for (Node child : newNode.children) child.parent = newNode;
 
             node.keys.subList(mid, node.keys.size()).clear();
@@ -168,6 +170,7 @@ public class PartsCataloger {
                     break;
                 }
             }
+
             if (toRemove == null) {
                 System.out.println("Error: Part ID " + id + " not found.");
                 return;
@@ -196,12 +199,13 @@ public class PartsCataloger {
             }
         }
     }
+
     // User Interface: Scanner
     public static void main(String[] args) {
-        BPlusTree tree    = new BPlusTree();
-        Scanner   console = new Scanner(System.in);
+        BPlusTree tree = new BPlusTree();
+        Scanner console = new Scanner(System.in);
 
-        loadFromFile("partfile.txt", tree); //Loads the flat-file
+        loadFromFile("partfile.txt", tree);//Loads the flat-file
 
         //Recursively runs program as long as user wants
         boolean running = true;
@@ -209,7 +213,7 @@ public class PartsCataloger {
             printMenu();
             int choice;
             try {
-                choice = Integer.parseInt(console.nextLine().trim());
+                choice = Integer.parseInt(console.nextLine());
             } catch (NumberFormatException e) {
                 System.out.println("Invalid input. Please enter a number between 1 and 6.");
                 continue;
@@ -219,45 +223,44 @@ public class PartsCataloger {
             switch (choice) {
                 case 1: // Search
                     System.out.print("Enter Part ID: ");
-                    Part p = tree.search(console.nextLine().trim());
+                    Part p = tree.search(console.nextLine());
                     System.out.println(p != null ? p : "Part not found.");
                     break;
-                case 2: // Next 10
+                case 2: // Display Next 10
                     System.out.print("Enter Starting Part ID: ");
-                    displayNextTen(tree, console.nextLine().trim());
+                    displayNextTen(tree, console.nextLine());
                     break;
                 case 3: // Add
                     System.out.print("Part ID (7 chars): ");
-                    String id = console.nextLine().trim();
+                    String id = console.nextLine();
                     System.out.print("Description: ");
-                    String desc = console.nextLine().trim();
+                    String desc = console.nextLine();
                     tree.insert(new Part(id, desc));
                     break;
                 case 4: // Modify
                     System.out.print("Enter Part ID to modify: ");
-                    Part mod = tree.search(console.nextLine().trim());
+                    Part mod = tree.search(console.nextLine());
                     if (mod != null) {
                         System.out.print("Enter new description: ");
-                        mod.description = console.nextLine().trim();
+                        mod.description = console.nextLine();
                     } else {
                         System.out.println("Part not found.");
                     }
                     break;
                 case 5: // Delete
                     System.out.print("Enter Part ID to delete: ");
-                    tree.delete(console.nextLine().trim());
+                    tree.delete(console.nextLine());
                     break;
                 case 6: // Exit & Save or Not
                     System.out.print("Save changes? (1 for Yes, 2 for No): ");
-                    if (console.nextLine().trim().equals("1")) saveToFile("partfile.txt", tree);
+                    if (console.nextLine().equals("1")) saveToFile("partfile.txt", tree);
                     running = false;
                     break;
                 default:
                     System.out.println("Selection Invalid.");
             }
         }
-        console.close();
-        printFinalMetrics(tree); //Outputs metrics: Splits, Parent Splits, Fusions and Parent Fusions
+        printFinalMetrics(tree);//Outputs metrics: Splits, Parent Splits, Fusions and Parent Fusions
     }
 
     //Show User Menu Choices
@@ -274,9 +277,9 @@ public class PartsCataloger {
 
     //Method Shows Next Ten
     private static void displayNextTen(BPlusTree tree, String id) {
-        LeafNode curr          = tree.findLeaf(id);
-        int      count         = 0;
-        boolean  startPrinting = false;
+        LeafNode curr = tree.findLeaf(id);
+        int count = 0;
+        boolean startPrinting = false;
 
         while (curr != null && count < 10) {
             for (Part r : curr.records) {
@@ -296,12 +299,12 @@ public class PartsCataloger {
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.length() >= 7) {
-                    String partId   = line.substring(0, 7).trim();
-                    String partDesc = line.length() > 15 ? line.substring(15).trim() : "";
-                    if (!partId.isEmpty()) tree.insert(new Part(partId, partDesc));
+                    String id = line.substring(0, 7).trim();
+                    String desc = line.length() > 15 ? line.substring(15).trim() : "";
+                    tree.insert(new Part(id, desc));
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.println("Loading from file failed.");
         }
     }
@@ -331,10 +334,11 @@ public class PartsCataloger {
     //Prints the splits and fusions
     private static void printFinalMetrics(BPlusTree tree) {
         System.out.println("\n--- Final Project Metrics ---");
-        System.out.println("Total Splits: "   + totalSplits);
-        System.out.println("Parent Splits: "  + parentSplits);
-        System.out.println("Fusions: "        + fusions);
+        System.out.println("Total Splits: " + totalSplits);
+        System.out.println("Parent Splits: " + parentSplits);
+        System.out.println("Fusions: " + fusions);
         System.out.println("Parent Fusions: " + parentFusions);
-        System.out.println("Tree Depth: "     + tree.getDepth());
+        System.out.println("Tree Depth: " + tree.getDepth());
     }
 }
+//Stage Enabled test

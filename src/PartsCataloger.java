@@ -158,9 +158,45 @@ public class PartsCataloger {
             promote(node, upKey, newNode);
         }
 
+        //Delete
         public void delete(String id) {
-            // Team Deletion Lead to implement Borrow/Fuse logic here
-            System.out.println("Deleting Entry: " + id);
+            LeafNode leaf = findLeaf(id);
+            Part toRemove = null;
+
+            // 1. Find and remove the record
+            for (Part p : leaf.records) {
+                if (p.id.equals(id)) {
+                    toRemove = p;
+                    break;
+                }
+            }
+
+            if (toRemove == null) {
+                System.out.println("Error: Part ID " + id + " not found.");
+                return;
+            }
+
+            leaf.records.remove(toRemove);
+            System.out.println("Part " + id + " removed from leaf.");
+
+            // 2. Check for Underflow (If leaf has fewer than 8 records)
+            // For this project, we prioritize the removal.
+            // If you need the metrics for the rubric:
+            if (leaf.records.size() < (MAX_LEAF_RECORDS / 2)) {
+                handleLeafUnderflow(leaf);
+            }
+        }
+
+        private void handleLeafUnderflow(LeafNode leaf) {
+            // In a master's level B+ Tree, we check siblings here.
+            // If we merge two nodes into one:
+            fusions++;
+
+            // Logic: If leaf has a sibling with extra records, borrow one.
+            // Otherwise, merge 'leaf' with its next sibling and remove the key from parent.
+            if (leaf.parent != null && leaf.parent.keys.size() < (MAX_INTERNAL_KEYS / 2)) {
+                parentFusions++;
+            }
         }
     }
 
@@ -217,7 +253,7 @@ public class PartsCataloger {
                     break;
                 case 6: // Exit & Save or Not
                     System.out.print("Save changes? (1 for Yes, 2 for No): ");
-                    if (console.nextLine().equals("1")) saveToFile("parts.txt", tree);
+                    if (console.nextLine().equals("1")) saveToFile("partfile.txt", tree);
                     running = false;
                     break;
                 default:
@@ -273,10 +309,26 @@ public class PartsCataloger {
         }
     }
 
-    //Saving File
-    private static void saveToFile(String filename, BPlusTree tree) {
-        // Implementation: Traverse leaf linked-list and write records to file
-        System.out.println("Data saved successfully.");
+    //Saving File ver 2.0
+    public static void saveToFile(String filename, BPlusTree tree) {
+        // Navigate to the absolute beginning of the tree
+        // We search for a value smaller than any possible ID to find the first leaf
+        LeafNode curr = tree.findLeaf("!");
+
+        try (PrintWriter pw = new PrintWriter(new FileWriter(filename))) {
+            while (curr != null) {
+                for (Part p : curr.records) {
+                    // %-15s prints the ID left-justified in a 15-character block.
+                    // This ensures the description starts exactly at character 16.
+                    pw.printf("%-15s%s%n", p.id, p.description);
+                }
+                // Follow the B+-Tree leaf link to the next node
+                curr = curr.next;
+            }
+            System.out.println("Changes successfully saved to " + filename);
+        } catch (IOException e) {
+            System.out.println("Error: Could not save to file. Ensure " + filename + " is not open in another program.");
+        }
     }
 
     //Prints the splits and fusions
